@@ -30,14 +30,14 @@ var defaults = {
     el: null,
 
     /**
-     * 是否自动选取
+     * 是否自动最大居中选区
      */
     auto: true,
 
     /**
      * 裁剪比例
      */
-    ratio: 0,
+    ratio: 1,
 
     /**
      * 裁剪宽度
@@ -62,12 +62,12 @@ var defaults = {
     /**
      * 裁剪最大宽度
      */
-    maxWidth: 200,
+    maxWidth: 0,
 
     /**
      * 裁剪最大高度
      */
-    maxHeight: 200,
+    maxHeight: 0,
 
     /**
      * 开始选区的最小值
@@ -81,6 +81,7 @@ var ImgClip = UI.extend({
 
         ImgClip.parent(the);
         the[_options] = object.assign({}, defaults, options);
+        the[_autoCalMaxSelectionSize] = !the[_options].maxWidth || !the[_options].maxHeight;
         the[_initNode]();
     },
 
@@ -107,19 +108,43 @@ var ImgClip = UI.extend({
         return this[_imgEl].src;
     },
 
+
+    /**
+     * 获取当前选区
+     * @returns {{left:Number,top:Number,width:Number,height:Number,srcLeft:Number,srcTop:Number,srcWidth:Number,srcHeight:Number}}
+     */
     getSelection: function () {
-
+        return this[_parseSelection]();
     },
 
-    setSelection: function () {
 
+    /**
+     * 设置选区
+     * @param sel {Array} 选区，格式要求：[left, top, width, height]
+     * @returns {ImgClip}
+     */
+    setSelection: function (sel) {
+        var the = this;
+
+        the[_changeMode](true);
+        the[_changeSelection]([sel[0], sel[1]], [sel[2], sel[3]]);
+        the[_resizable].enable();
+        the[_resizerDraggable].enable();
+
+        return this;
     },
 
+
+    /**
+     * 释放选区
+     * @returns {ImgClip}
+     */
     release: function () {
         var the = this;
 
         the[_changeMode](false);
         the[_selectionLeftTopWidthHeight] = [0, 0, 0, 0];
+        the.emit('change', the[_parseSelection]());
 
         return the;
     }
@@ -127,6 +152,8 @@ var ImgClip = UI.extend({
 var _options = ImgClip.sole();
 var _initNode = ImgClip.sole();
 var _initEvent = ImgClip.sole();
+var _autoCalMaxSelectionSize = ImgClip.sole();
+var _calMaxSelectionSize = ImgClip.sole();
 var _changeImage = ImgClip.sole();
 var _changeMode = ImgClip.sole();
 var _changeSelection = ImgClip.sole();
@@ -159,6 +186,27 @@ pro[_initNode] = function () {
     the[_changeImage](imgEl.src);
 };
 
+// 重新计算最大值
+pro[_calMaxSelectionSize] = function (width, height) {
+    var the = this;
+    var options = the[_options];
+    var optionRatio = options.ratio;
+
+    if (optionRatio) {
+        if (the[_autoCalMaxSelectionSize]) {
+            if (width / height > optionRatio) {
+                options.maxHeight = height;
+                options.maxWidth = height * optionRatio;
+            } else {
+                options.maxWidth = width;
+                options.maxHeight = width / optionRatio;
+            }
+        }
+    } else {
+        options.maxWidth = options.maxWidth || width;
+        options.maxHeight = options.maxHeight || height;
+    }
+};
 
 pro[_changeImage] = function (url) {
     var the = this;
@@ -174,7 +222,6 @@ pro[_changeImage] = function (url) {
             return the.emit('error', err);
         }
 
-        the.release();
         the[_imgEl].src = the[_cloneEl].src = the[_showEl].src = originalImg.src;
 
         var imgWidth = layout.outerWidth(the[_imgEl]);
@@ -185,6 +232,8 @@ pro[_changeImage] = function (url) {
         the[_showPosition] = the[_selectionLeftTopWidthHeight] = [0, 0, 0, 0];
         the[_imgDisplaySizes] = [imgWidth, imgHeight];
         the[_imgOriginalSizes] = [originalImg.width, originalImg.height];
+        the.release();
+        the[_calMaxSelectionSize](imgWidth, imgHeight);
         the.emit('change', the[_parseSelection]());
 
         attribute.style(the[_containerEl], {
@@ -200,7 +249,12 @@ pro[_changeImage] = function (url) {
             height: imgHeight
         });
 
-        if (!the[_resizable]) {
+        if (the[_resizable]) {
+            the[_resizable].setOptions({
+                maxWidth: options.maxWidth,
+                maxHeight: options.maxHeight
+            });
+        } else {
             modification.insert(the[_containerEl], the[_imgEl], 'afterend');
             the[_resizable] = new Resizable({
                 el: the[_resizerEl],
@@ -228,6 +282,17 @@ pro[_changeImage] = function (url) {
                 draggable: false
             });
             the[_initEvent]();
+        }
+
+        // 自动最大居中选区
+        if (options.auto) {
+            var maxSize = the[_resizable].getMaxSize();
+            var maxWidth = maxSize.width;
+            var maxHeight = maxSize.height;
+            var maxLeft = (imgWidth - maxWidth) / 2;
+            var maxTop = (imgHeight - maxHeight) / 2;
+
+            the.setSelection([maxLeft, maxTop, maxWidth, maxHeight]);
         }
     });
 };
@@ -364,18 +429,18 @@ pro[_changeSelection] = function (positions, sizes) {
 
 pro[_parseSelection] = function () {
     var the = this;
-    var widthRatio = the[_imgDisplaySizes][0] / the[_imgOriginalSizes][0];
-    var heightRatio = the[_imgDisplaySizes][1] / the[_imgOriginalSizes][1];
+    var ratioX = the[_imgDisplaySizes][0] / the[_imgOriginalSizes][0];
+    var ratioY = the[_imgDisplaySizes][1] / the[_imgOriginalSizes][1];
 
     return {
         left: the[_selectionLeftTopWidthHeight][0],
         top: the[_selectionLeftTopWidthHeight][1],
         width: the[_selectionLeftTopWidthHeight][2],
         height: the[_selectionLeftTopWidthHeight][3],
-        srcLeft: the[_selectionLeftTopWidthHeight][0] / widthRatio,
-        srcTop: the[_selectionLeftTopWidthHeight][1] / heightRatio,
-        srcWidth: the[_selectionLeftTopWidthHeight][2] / widthRatio,
-        srcHeight: the[_selectionLeftTopWidthHeight][3] / heightRatio
+        srcLeft: the[_selectionLeftTopWidthHeight][0] / ratioX,
+        srcTop: the[_selectionLeftTopWidthHeight][1] / ratioY,
+        srcWidth: the[_selectionLeftTopWidthHeight][2] / ratioX,
+        srcHeight: the[_selectionLeftTopWidthHeight][3] / ratioY
     };
 };
 
