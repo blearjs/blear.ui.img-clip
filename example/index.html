@@ -23,13 +23,36 @@
             max-width: 800px;
             height: auto;
         }
+
+        #ret {
+            background: #333;
+            color: #eee;
+            font-family: Monaco;
+            font-size: 14px;
+            padding: 10px;
+        }
+
+        #ret2 {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+
+        button {
+            font-size: 18px;
+        }
     </style>
 </head>
 <body ontouchstart="">
 
-<h1>example</h1>
+<img src="http://tupian.enterdesk.com/2016/hxj/08/16/1602/ChMkJ1exsKeIUuRcAAg2b09O224AAUdNgKfE_4ACDaH870.jpg" alt="demo" id="demo">
 
-<img src="http://pic.pp3.cn/uploads//201512/2015120204.jpg" alt="demo" id="demo">
+<hr>
+<button id="changeImage">改变图片地址</button>
+
+<pre id="ret">change event</pre>
+
+<div id="ret2"></div>
 
 <script src="/node_modules/coolie.js/coolie.js"
         data-config="/example/coolie-config.js"

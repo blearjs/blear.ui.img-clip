@@ -2,7 +2,8 @@
   position: relative;
   background: #000;
 
-  &-img {
+  &-clone,
+  &-show {
     position: absolute;
     visibility: visible;
     display: block;
@@ -10,8 +11,6 @@
     margin: 0;
     padding: 0;
     top: 0;
-    right: 0;
-    bottom: 0;
     left: 0;
     max-width: none;
     max-height: none;
@@ -27,12 +26,25 @@
   }
 
   &-resizer {
+    display: none;
     position: absolute;
-    width: 200px;
-    height: 200px;
-    top: 100px;
-    left: 100px;
-    overflow: hidden;
+    width: 0;
+    height: 0;
+    top: 0;
+    left: 0;
+
+    &-container,
+    &-cover {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+
+    &-container {
+      overflow: hidden;
+    }
   }
 
   &-line {
@@ -53,6 +65,29 @@
       right: 0;
       bottom: 0;
       height: 1px;
+    }
+  }
+
+  &-pointer {
+    position: absolute;
+    background-color: #333;
+    border: 1px solid #eee;
+    width: 8px;
+    height: 8px;
+    -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
+    opacity: 0.5;
+
+    &_east {
+      top: 50%;
+      margin-top: -4px;
+      right: -3px;
+    }
+
+    &_south {
+      left: 50%;
+      margin-left: -4px;
+      bottom: -3px;
     }
   }
 }
