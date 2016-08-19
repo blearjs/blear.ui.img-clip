@@ -8,5 +8,10 @@
 'use strict';
 
 
+var ImgClip = require('../src/index');
+
+window.ic = new ImgClip({
+    el: '#demo'
+});
 
 
