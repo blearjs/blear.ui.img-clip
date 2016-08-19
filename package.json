@@ -1,0 +1,39 @@
+{
+  "name": "blear.ui.img-clip",
+  "version": "1.0.0",
+  "description": "图片裁剪 UI",
+  "scripts": {
+    "live": "browser-sync start --config bs-config.js"
+  },
+  "preferGlobal": false,
+  "bin": {},
+  "engines": {
+    "node": ">=1.0.0",
+    "iojs": ">=1.0.0"
+  },
+  "main": "src/index.js",
+  "keywords": [
+    "blear",
+    "__template__",
+    "cloudcome",
+    "ydr.me"
+  ],
+  "author": {
+    "name": "cloudcome",
+    "email": "cloudcome@163.com",
+    "url": "http://ydr.me"
+  },
+  "contributors": [],
+  "homepage": "https://github.com/blearjs/blear.ui.img-clip",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blearjs/blear.ui.img-clip"
+  },
+  "bugs": {
+    "url": "https://github.com/blearjs/blear.ui.img-clip/issues"
+  },
+  "dependencies": {},
+  "peerDependencies": {},
+  "devDependencies": {},
+  "license": "MIT"
+}
