@@ -6,16 +6,16 @@
 
 'use strict';
 
-var UI = require('blear.ui');
-var loader = require('blear.utils.loader');
-var object = require('blear.utils.object');
-var selector = require('blear.core.selector');
-var attribute = require('blear.core.attribute');
-var layout = require('blear.core.layout');
-var event = require('blear.core.event');
+var UI =           require('blear.ui');
+var loader =       require('blear.utils.loader');
+var object =       require('blear.utils.object');
+var selector =     require('blear.core.selector');
+var attribute =    require('blear.core.attribute');
+var layout =       require('blear.core.layout');
+var event =        require('blear.core.event');
 var modification = require('blear.core.modification');
-var Resizable = require('blear.classes.resizable');
-var Draggable = require('blear.classes.draggable');
+var Resizable =    require('blear.classes.resizable');
+var Draggable =    require('blear.classes.draggable');
 
 var template = require('./template.html');
 var style = require('./style.css');
@@ -147,6 +147,26 @@ var ImgClip = UI.extend({
         the.emit('change', the[_parseSelection]());
 
         return the;
+    },
+
+
+    /**
+     * 销毁实例
+     */
+    destroy: function () {
+        var the = this;
+
+        the.release();
+
+        if (the[_resizable]) {
+            the[_resizable].destroy();
+            the[_resizerDraggable].destroy();
+            the[_trackerDraggable].destroy();
+            the[_resizable] = the[_resizerDraggable] = the[_trackerDraggable] = null;
+        }
+
+        modification.remove(the[_containerEl]);
+        attribute.show(the[_imgEl]);
     }
 });
 var _options = ImgClip.sole();

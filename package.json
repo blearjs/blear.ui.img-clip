@@ -14,7 +14,9 @@
   "main": "src/index.js",
   "keywords": [
     "blear",
-    "__template__",
+    "ui",
+    "img",
+    "clip",
     "cloudcome",
     "ydr.me"
   ],
@@ -33,7 +35,18 @@
     "url": "https://github.com/blearjs/blear.ui.img-clip/issues"
   },
   "dependencies": {},
-  "peerDependencies": {},
+  "peerDependencies": {
+    "blear.ui": "1.x",
+    "blear.utils.loader": "1.x",
+    "blear.utils.object": "1.x",
+    "blear.core.selector": "1.x",
+    "blear.core.attribute": "1.x",
+    "blear.core.layout": "1.x",
+    "blear.core.event": "1.x",
+    "blear.core.modification": "1.x",
+    "blear.classes.resizable": "1.x",
+    "blear.classes.draggable": "1.x"
+  },
   "devDependencies": {},
   "license": "MIT"
 }
