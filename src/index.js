@@ -6,16 +6,16 @@
 
 'use strict';
 
-var UI =           require('blear.ui');
-var loader =       require('blear.utils.loader');
-var object =       require('blear.utils.object');
-var selector =     require('blear.core.selector');
-var attribute =    require('blear.core.attribute');
-var layout =       require('blear.core.layout');
-var event =        require('blear.core.event');
+var UI = require('blear.ui');
+var loader = require('blear.utils.loader');
+var object = require('blear.utils.object');
+var selector = require('blear.core.selector');
+var attribute = require('blear.core.attribute');
+var layout = require('blear.core.layout');
+var event = require('blear.core.event');
 var modification = require('blear.core.modification');
-var Resizable =    require('blear.classes.resizable');
-var Draggable =    require('blear.classes.draggable');
+var Resizable = require('blear.classes.resizable');
+var Draggable = require('blear.classes.draggable');
 
 var template = require('./template.html');
 var style = require('./style.css');
@@ -130,6 +130,7 @@ var ImgClip = UI.extend({
         the[_changeSelection]([sel[0], sel[1]], [sel[2], sel[3]]);
         the[_resizable].enable();
         the[_resizerDraggable].enable();
+        the.emit('afterSelection');
 
         return this;
     },
@@ -144,7 +145,8 @@ var ImgClip = UI.extend({
 
         the[_changeMode](false);
         the[_selectionLeftTopWidthHeight] = [0, 0, 0, 0];
-        the.emit('change', the[_parseSelection]());
+        the.emit('changeSelection', the[_parseSelection]());
+        the.emit('cancelSelection');
 
         return the;
     },
@@ -233,7 +235,7 @@ pro[_changeImage] = function (url) {
     var options = the[_options];
 
     the.emit('beforeLoading');
-    attribute.show(the[_imgEl]);
+    attribute.show(the[_imgEl], 'inline-block');
     attribute.hide(the[_containerEl]);
     loader.img(url, function (err, originalImg) {
         the.emit('afterLoading');
@@ -248,13 +250,13 @@ pro[_changeImage] = function (url) {
         var imgHeight = layout.outerHeight(the[_imgEl]);
 
         attribute.hide(the[_imgEl]);
-        attribute.show(the[_containerEl]);
+        attribute.show(the[_containerEl], 'inline-block');
         the[_showPosition] = the[_selectionLeftTopWidthHeight] = [0, 0, 0, 0];
         the[_imgDisplaySizes] = [imgWidth, imgHeight];
         the[_imgOriginalSizes] = [originalImg.width, originalImg.height];
         the.release();
         the[_calMaxSelectionSize](imgWidth, imgHeight);
-        the.emit('change', the[_parseSelection]());
+        the.emit('changeSelection', the[_parseSelection]());
 
         attribute.style(the[_containerEl], {
             width: imgWidth,
@@ -348,6 +350,7 @@ pro[_initEvent] = function () {
         var styleLeft = meta.startX - containerLeft;
         var styleTop = meta.startY - containerTop;
 
+        the.emit('beforeSelection');
         the[_changeSelection]([styleLeft, styleTop]);
     });
 
@@ -361,6 +364,7 @@ pro[_initEvent] = function () {
 
         if (meta.deltaX < minSelectionSize && meta.deltaY < minSelectionSize) {
             the[_changeMode](false);
+            the.emit('cancelSelection');
         } else {
             the[_resizable].enable();
             the[_resizerDraggable].enable();
@@ -369,6 +373,13 @@ pro[_initEvent] = function () {
             if (meta.deltaX < minSize.width || meta.deltaY < minSize.height) {
                 the[_changeSelection](null, [minSize.width, minSize.height]);
             }
+            // 纠正选区
+            else {
+                var maxSize = Math.max(meta.deltaX, meta.deltaY);
+                the[_changeSelection](null, [maxSize, maxSize]);
+            }
+
+            the.emit('afterSelection');
         }
     });
 
@@ -433,7 +444,7 @@ pro[_changeSelection] = function (positions, sizes) {
     }
 
     the[_selectionLeftTopWidthHeight] = [left, top, width, height];
-    the.emit('change', the[_parseSelection]());
+    the.emit('changeSelection', the[_parseSelection]());
 
     attribute.style(the[_resizerEl], {
         left: left,
