@@ -19,7 +19,7 @@ var Draggable =    require('blear.classes.draggable');
 
 var template = require('./template.html');
 var style = require('./style.css');
-var gif = require('./line.gif', 'file');
+var gif = require('./line.gif', 'file|base64');
 
 var win = window;
 var namespace = 'blearui-imgClip';
