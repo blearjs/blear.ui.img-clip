@@ -40,16 +40,6 @@ var defaults = {
     ratio: 1,
 
     /**
-     * 裁剪宽度
-     */
-    width: 200,
-
-    /**
-     * 裁剪高度
-     */
-    height: 200,
-
-    /**
      * 裁剪最小宽度
      */
     minWidth: 100,
@@ -280,8 +270,6 @@ pro[_changeImage] = function (url) {
             modification.insert(the[_containerEl], the[_imgEl], 'afterend');
             the[_resizable] = new Resizable({
                 el: the[_resizerEl],
-                width: options.width,
-                height: options.height,
                 minWidth: options.minWidth,
                 minHeight: options.minHeight,
                 maxWidth: options.maxWidth,
@@ -326,6 +314,7 @@ pro[_initEvent] = function () {
     // 尺寸区尺寸改变
     the[_resizable].on('resizeStart', function () {
         the[_resizerDraggable].disable();
+        the.emit('beforeSelection');
     });
 
     the[_resizable].on('resizeMove', function (meta) {
@@ -334,6 +323,7 @@ pro[_initEvent] = function () {
 
     the[_resizable].on('resizeEnd', function () {
         the[_resizerDraggable].enable();
+        the.emit('afterSelection');
     });
 
     // 背景拖拽
@@ -390,6 +380,7 @@ pro[_initEvent] = function () {
         the[_resizable].disable();
         selectionLeft = the[_selectionLeftTopWidthHeight][0];
         selectionTop = the[_selectionLeftTopWidthHeight][1];
+        the.emit('beforeSelection');
     });
 
     the[_resizerDraggable].on('dragMove', function (meta) {
@@ -409,6 +400,7 @@ pro[_initEvent] = function () {
         the[_showPosition][1] -= meta.deltaY;
         the[_selectionLeftTopWidthHeight][0] = selectionLeft + meta.deltaX;
         the[_selectionLeftTopWidthHeight][1] = selectionTop + meta.deltaY;
+        the.emit('afterSelection');
     });
 };
 
