@@ -143,6 +143,21 @@ var ImgClip = UI.extend({
 
 
     /**
+     * 重置为初始状态
+     * @returns {ImgClip}
+     */
+    reset: function () {
+        var the = this;
+
+        the.release();
+        the[_emptyImage]();
+
+        return the;
+    },
+
+
+
+    /**
      * 销毁实例
      */
     destroy: function () {
@@ -166,6 +181,7 @@ var _initNode = ImgClip.sole();
 var _initEvent = ImgClip.sole();
 var _autoCalMaxSelectionSize = ImgClip.sole();
 var _calMaxSelectionSize = ImgClip.sole();
+var _emptyImage = ImgClip.sole();
 var _changeImage = ImgClip.sole();
 var _changeMode = ImgClip.sole();
 var _changeSelection = ImgClip.sole();
@@ -220,13 +236,20 @@ pro[_calMaxSelectionSize] = function (width, height) {
     }
 };
 
+pro[_emptyImage] = function () {
+    var the = this;
+
+    attribute.hide(the[_containerEl]);
+    the[_cloneEl].src = the[_showEl].src = '';
+};
+
 pro[_changeImage] = function (url) {
     var the = this;
     var options = the[_options];
 
     the.emit('beforeLoading');
     attribute.show(the[_imgEl], 'inline-block');
-    attribute.hide(the[_containerEl]);
+    the[_emptyImage]();
     loader.img(url, function (err, originalImg) {
         the.emit('afterLoading');
 
@@ -235,12 +258,12 @@ pro[_changeImage] = function (url) {
         }
 
         the[_imgEl].src = the[_cloneEl].src = the[_showEl].src = originalImg.src;
+        attribute.show(the[_containerEl], 'inline-block');
 
         var imgWidth = layout.outerWidth(the[_imgEl]);
         var imgHeight = layout.outerHeight(the[_imgEl]);
 
         attribute.hide(the[_imgEl]);
-        attribute.show(the[_containerEl], 'inline-block');
         the[_showPosition] = the[_selectionLeftTopWidthHeight] = [0, 0, 0, 0];
         the[_imgDisplaySizes] = [imgWidth, imgHeight];
         the[_imgOriginalSizes] = [originalImg.width, originalImg.height];
@@ -398,8 +421,8 @@ pro[_initEvent] = function () {
         the[_resizable].enable();
         the[_showPosition][0] -= meta.deltaX;
         the[_showPosition][1] -= meta.deltaY;
-        the[_selectionLeftTopWidthHeight][0] = selectionLeft + meta.deltaX;
-        the[_selectionLeftTopWidthHeight][1] = selectionTop + meta.deltaY;
+        // the[_selectionLeftTopWidthHeight][0] = selectionLeft + meta.deltaX;
+        // the[_selectionLeftTopWidthHeight][1] = selectionTop + meta.deltaY;
         the.emit('afterSelection');
     });
 };
