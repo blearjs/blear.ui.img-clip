@@ -358,8 +358,8 @@ pro[_initEvent] = function () {
 
         var scrollTop = layout.scrollTop(win);
         var scrollLeft = layout.scrollLeft(win);
-        var containerTop = layout.offsetTop(the[_containerEl]) - scrollTop;
-        var containerLeft = layout.offsetLeft(the[_containerEl]) - scrollLeft;
+        var containerTop = layout.clientTop(the[_containerEl]) - scrollTop;
+        var containerLeft = layout.clientLeft(the[_containerEl]) - scrollLeft;
         var styleLeft = meta.startX - containerLeft;
         var styleTop = meta.startY - containerTop;
 
