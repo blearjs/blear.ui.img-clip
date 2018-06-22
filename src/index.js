@@ -74,12 +74,12 @@ var defaults = {
      * 期望裁剪的宽度，高度会等比运算，宽度优先级高于高度
      * @type Number
      */
-    drawWidth: 200,
+    expectWidth: 200,
 
     /**
      * 期望裁剪的高度，宽度会等比运算
      */
-    drawHeight: 0
+    expectHeight: 0
 };
 var ImgClip = UI.extend({
     className: 'ImgClip',
@@ -546,8 +546,8 @@ proto[_parseSelection] = function () {
     var the = this;
     var options = the[_options];
     var rotation = options.rotation;
-    var expectDrawWidth = options.drawWidth;
-    var expectDrawHeight = options.drawHeight;
+    var expectWidth = options.expectWidth;
+    var expectHeight = options.expectHeight;
     var imgOriginalWidth = the[_imgOriginalSizes][0];
     var imgOriginalHeight = the[_imgOriginalSizes][1];
     var displayWidth = the[_imgDisplaySizes][0];
@@ -564,10 +564,14 @@ proto[_parseSelection] = function () {
     var srcTop = 0;
     var srcWidth = 0;
     var srcHeight = 0;
+    // 绘制尺寸
     var drawWidth = 0;
     var drawHeight = 0;
     var translateX = 0;
     var translateY = 0;
+    var vertical = false;
+    var visibleWidth = 0;
+    var visibleHeight = 0;
 
     switch (rotation) {
         case 0:
@@ -577,8 +581,6 @@ proto[_parseSelection] = function () {
             srcHeight = selHeight / ratioY;
             srcLeft = selLeft / ratioX;
             srcTop = selTop / ratioY;
-            drawWidth = selWidth;
-            drawHeight = selHeight;
             break;
 
         case 90:
@@ -588,9 +590,7 @@ proto[_parseSelection] = function () {
             srcHeight = selWidth / ratioY;
             srcLeft = selTop / ratioX;
             srcTop = imgOriginalHeight - selLeft / ratioY - srcHeight;
-            drawWidth = selHeight;
-            drawHeight = selWidth;
-            translateX = drawHeight;
+            vertical = true;
             break;
 
         case 180:
@@ -599,11 +599,7 @@ proto[_parseSelection] = function () {
             srcWidth = selWidth / ratioX;
             srcHeight = selHeight / ratioY;
             srcLeft = imgOriginalWidth - selLeft / ratioX - srcWidth;
-            srcTop = imgOriginalHeight - selLeft / ratioY - srcHeight;
-            drawWidth = selWidth;
-            drawHeight = selHeight;
-            translateX = drawWidth;
-            translateY = drawHeight;
+            srcTop = imgOriginalHeight - selTop / ratioY - srcHeight;
             break;
 
         case 270:
@@ -613,24 +609,55 @@ proto[_parseSelection] = function () {
             srcHeight = selWidth / ratioY;
             srcLeft = imgOriginalWidth - selTop / ratioX - srcWidth;
             srcTop = selLeft / ratioY;
-            drawWidth = selHeight;
-            drawHeight = selWidth;
-            translateY = drawWidth;
+            vertical = true;
             break;
     }
 
-    if (expectDrawWidth) {
-        drawWidth = expectDrawWidth;
-        expectRatio = insideRatio ? insideRatio : selWidth / drawWidth;
-        drawHeight = insideRatio
-            ? drawWidth / insideRatio
-            : selHeight / expectRatio;
+    // 垂直方向，宽高正好颠倒
+    if (vertical) {
+        expectRatio = insideRatio ? 1 / insideRatio : selHeight / selWidth;
+
+        if (expectWidth) {
+            drawHeight = expectWidth;
+            drawWidth = drawHeight * expectRatio;
+        } else {
+            drawWidth = expectHeight;
+            drawHeight = drawWidth / expectRatio;
+        }
+
+        visibleWidth = drawHeight;
+        visibleHeight = drawWidth;
     } else {
-        drawHeight = expectDrawHeight;
-        expectRatio = insideRatio ? insideRatio : drawHeight / selHeight;
-        drawWidth = insideRatio
-            ? drawHeight * insideRatio
-            : selWidth * expectRatio;
+        expectRatio = insideRatio ? insideRatio : selWidth / selHeight;
+
+        if (expectWidth) {
+            drawWidth = expectWidth;
+            drawHeight = drawWidth / expectRatio;
+        } else {
+            drawHeight = expectHeight;
+            drawWidth = drawHeight * expectRatio;
+        }
+
+        visibleWidth = drawWidth;
+        visibleHeight = drawHeight;
+    }
+
+    switch (rotation) {
+        case 0:
+            break;
+
+        case 90:
+            translateX = drawHeight;
+            break;
+
+        case 180:
+            translateX = drawWidth;
+            translateY = drawHeight;
+            break;
+
+        case 270:
+            translateY = drawWidth;
+            break;
     }
 
     return {
@@ -646,7 +673,9 @@ proto[_parseSelection] = function () {
         drawHeight: drawHeight,
         translateX: translateX,
         translateY: translateY,
-        rotation: rotation
+        rotation: rotation,
+        visibleWidth: visibleWidth,
+        visibleHeight: visibleHeight
     };
 };
 

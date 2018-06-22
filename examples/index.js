@@ -20,15 +20,15 @@ var demoEl = document.getElementById('demo');
 var changeImageEl = document.getElementById('changeImage');
 var randomSelectionEl = document.getElementById('randomSelection');
 
-var rotation = 0;
-var ratio = 0;
+var rotation = 270;
+var ratio = 0.618;
 demoEl.style.transform = 'rotate(' + rotation + 'deg)';
 var ic = window.ic = new ImgClip({
     el: '#demo',
     ratio: ratio,
     rotation: rotation,
-    drawWidth: 0,
-    drawHeight: 200
+    expectWidth: 0,
+    expectHeight: 200
 });
 
 var randomNumber = function (min, max) {
@@ -50,8 +50,8 @@ ic.on('changeSelection', function (sel) {
     // });
     var ctx = canvasEl.getContext('2d');
     ctx.save();
-    canvasEl.width = sel.drawWidth;
-    canvasEl.height = sel.drawHeight;
+    canvasEl.width = sel.visibleWidth;
+    canvasEl.height = sel.visibleHeight;
     ctx.translate(sel.translateX, sel.translateY);
     ctx.rotate(sel.rotation * Math.PI / 180);
     canvasImg.draw(canvasEl, demoEl, {
