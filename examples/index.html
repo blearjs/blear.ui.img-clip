@@ -38,6 +38,10 @@
             right: 0;
         }
 
+        #demo {
+            transform: rotate(90deg);
+        }
+
         button {
             font-size: 18px;
         }
@@ -45,16 +49,17 @@
 </head>
 <body ontouchstart="">
 
-<img src="http://tupian.enterdesk.com/2016/hxj/08/16/1602/ChMkJ1exsKeIUuRcAAg2b09O224AAUdNgKfE_4ACDaH870.jpg" alt="demo" id="demo">
+<img src="http://n.sinaimg.cn/news/transform/20171113/puY7-fynship2141885.jpg" alt="demo" id="demo">
 
 <hr>
 <button id="changeImage">改变图片地址</button>
+<button id="rotate">右旋转90°</button>
 <button id="randomSelection">随机选区</button>
 
 <pre id="ret">change event</pre>
 
 <script src="/node_modules/coolie.js/coolie.js"
-        data-config="/example/coolie-config.js"
+        data-config="/examples/coolie-config.js"
         data-main="index.js"></script>
 
 </body>

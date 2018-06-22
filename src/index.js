@@ -9,10 +9,10 @@
 var UI = require('blear.ui');
 var loader = require('blear.utils.loader');
 var object = require('blear.utils.object');
+var access = require('blear.utils.access');
 var selector = require('blear.core.selector');
 var attribute = require('blear.core.attribute');
 var layout = require('blear.core.layout');
-var event = require('blear.core.event');
 var modification = require('blear.core.modification');
 var Resizable = require('blear.classes.resizable');
 var Draggable = require('blear.classes.draggable');
@@ -38,6 +38,12 @@ var defaults = {
      * 裁剪比例
      */
     ratio: 1,
+
+    /**
+     * 旋转度数，仅支持0°、90°、180°、270°（即水平、垂直方向）
+     * @type Number
+     */
+    rotation: 0,
 
     /**
      * 裁剪最小宽度
@@ -75,20 +81,24 @@ var ImgClip = UI.extend({
         the[_initNode]();
     },
 
-
     /**
      * 改变当前裁剪图片的地址
      * @param url
+     * @param [rotation]
      * @returns {ImgClip}
      */
-    changeImage: function (url) {
+    changeImage: function (url, rotation) {
         var the = this;
+        var args = access.args(arguments);
+
+        if (args.length === 2) {
+            the[_options].rotation = rotation || 0;
+        }
 
         the[_changeImage](url);
 
         return the;
     },
-
 
     /**
      * 获取当前裁剪的图片地址
@@ -97,7 +107,6 @@ var ImgClip = UI.extend({
     getImage: function () {
         return this[_imgEl].src;
     },
-
 
     /**
      * 获取当前选区
@@ -156,7 +165,6 @@ var ImgClip = UI.extend({
     },
 
 
-
     /**
      * 销毁实例
      */
@@ -176,32 +184,35 @@ var ImgClip = UI.extend({
         attribute.show(the[_imgEl]);
     }
 });
-var _options = ImgClip.sole();
-var _initNode = ImgClip.sole();
-var _initEvent = ImgClip.sole();
-var _autoCalMaxSelectionSize = ImgClip.sole();
-var _calMaxSelectionSize = ImgClip.sole();
-var _emptyImage = ImgClip.sole();
-var _changeImage = ImgClip.sole();
-var _changeMode = ImgClip.sole();
-var _changeSelection = ImgClip.sole();
-var _parseSelection = ImgClip.sole();
-var _imgEl = ImgClip.sole();
-var _containerEl = ImgClip.sole();
-var _cloneEl = ImgClip.sole();
-var _showEl = ImgClip.sole();
-var _trackerEl = ImgClip.sole();
-var _resizerEl = ImgClip.sole();
-var _resizable = ImgClip.sole();
-var _resizerDraggable = ImgClip.sole();
-var _trackerDraggable = ImgClip.sole();
-var _imgDisplaySizes = ImgClip.sole();
-var _imgOriginalSizes = ImgClip.sole();
-var _selectionLeftTopWidthHeight = ImgClip.sole();
-var _showPosition = ImgClip.sole();
-var pro = ImgClip.prototype;
+var sole = ImgClip.sole;
+var _options = sole();
+var _initNode = sole();
+var _initEvent = sole();
+var _autoCalMaxSelectionSize = sole();
+var _calMaxSelectionSize = sole();
+var _emptyImage = sole();
+var _changeImage = sole();
+var _changeMode = sole();
+var _changeSelection = sole();
+var _parseSelection = sole();
+var _imgEl = sole();
+var _containerEl = sole();
+var _cloneEl = sole();
+var _showEl = sole();
+var _trackerEl = sole();
+var _resizerEl = sole();
+var _resizable = sole();
+var _resizerDraggable = sole();
+var _trackerDraggable = sole();
+var _imgDisplaySizes = sole();
+var _imgOriginalSizes = sole();
+var _selectionLeftTopWidthHeight = sole();
+var _showPosition = sole();
+var _rotation = sole();
+var _transformImgEl = sole();
+var proto = ImgClip.prototype;
 
-pro[_initNode] = function () {
+proto[_initNode] = function () {
     var the = this;
     var options = the[_options];
     var imgEl = the[_imgEl] = selector.query(options.el)[0];
@@ -215,7 +226,7 @@ pro[_initNode] = function () {
 };
 
 // 重新计算最大值
-pro[_calMaxSelectionSize] = function (width, height) {
+proto[_calMaxSelectionSize] = function (width, height) {
     var the = this;
     var options = the[_options];
     var optionRatio = options.ratio;
@@ -236,16 +247,21 @@ pro[_calMaxSelectionSize] = function (width, height) {
     }
 };
 
-pro[_emptyImage] = function () {
+proto[_emptyImage] = function () {
     var the = this;
 
     attribute.hide(the[_containerEl]);
     the[_cloneEl].src = the[_showEl].src = '';
 };
 
-pro[_changeImage] = function (url) {
+proto[_changeImage] = function (url) {
     var the = this;
     var options = the[_options];
+    var rotation = options.rotation || 0;
+
+    if (rotation % 90 > 0) {
+        return the.emit('error', new Error('仅支持垂直、水平方向旋转'));
+    }
 
     the.emit('beforeLoading');
     attribute.show(the[_imgEl], 'inline-block');
@@ -270,18 +286,41 @@ pro[_changeImage] = function (url) {
         the.release();
         the[_calMaxSelectionSize](imgWidth, imgHeight);
         the.emit('changeSelection', the[_parseSelection]());
-
         attribute.style(the[_containerEl], {
             width: imgWidth,
             height: imgHeight
         });
+
+        var imgDisplayWidth = imgWidth;
+        var imgDisplayHeight = imgHeight;
+        var marginTop = 0;
+        var marginLeft = 0;
+
+        // 水平、垂直交换
+        if (rotation === 90 || rotation === 270) {
+            imgDisplayWidth = imgHeight;
+            imgDisplayHeight = imgWidth;
+            marginTop = (imgHeight - imgWidth) / 2;
+            marginLeft = (imgWidth - imgHeight) / 2;
+        }
+
         attribute.style(the[_cloneEl], {
-            width: imgWidth,
-            height: imgHeight
+            width: imgDisplayWidth,
+            height: imgDisplayHeight,
+            marginTop: marginTop,
+            marginLeft: marginLeft,
+            transform: {
+                rotate: rotation
+            }
         });
         attribute.style(the[_showEl], {
-            width: imgWidth,
-            height: imgHeight
+            width: imgDisplayWidth,
+            height: imgDisplayHeight,
+            marginTop: marginTop,
+            marginLeft: marginLeft,
+            transform: {
+                rotate: rotation
+            }
         });
 
         if (the[_resizable]) {
@@ -330,7 +369,7 @@ pro[_changeImage] = function (url) {
     });
 };
 
-pro[_initEvent] = function () {
+proto[_initEvent] = function () {
     var the = this;
     var options = the[_options];
 
@@ -427,14 +466,14 @@ pro[_initEvent] = function () {
     });
 };
 
-pro[_changeMode] = function (isSelecting) {
+proto[_changeMode] = function (isSelecting) {
     var the = this;
 
     attribute.style(the[_cloneEl], 'opacity', isSelecting ? 0.6 : 1);
     attribute.style(the[_resizerEl], 'display', isSelecting ? 'block' : 'none');
 };
 
-pro[_changeSelection] = function (positions, sizes) {
+proto[_changeSelection] = function (positions, sizes) {
     var the = this;
     var left = positions ? positions[0] : the[_selectionLeftTopWidthHeight][0];
     var top = positions ? positions[1] : the[_selectionLeftTopWidthHeight][1];
@@ -473,7 +512,7 @@ pro[_changeSelection] = function (positions, sizes) {
     });
 };
 
-pro[_parseSelection] = function () {
+proto[_parseSelection] = function () {
     var the = this;
     var ratioX = the[_imgDisplaySizes][0] / the[_imgOriginalSizes][0];
     var ratioY = the[_imgDisplaySizes][1] / the[_imgOriginalSizes][1];
@@ -488,6 +527,17 @@ pro[_parseSelection] = function () {
         srcWidth: the[_selectionLeftTopWidthHeight][2] / ratioX,
         srcHeight: the[_selectionLeftTopWidthHeight][3] / ratioY
     };
+};
+
+/**
+ * 变换图片
+ */
+proto[_transformImgEl] = function () {
+    var the = this;
+
+    attribute.style(the[_imgEl], 'transform', {
+        rotate: the[_rotation]
+    });
 };
 
 style += '.' + namespace + '-line{' +

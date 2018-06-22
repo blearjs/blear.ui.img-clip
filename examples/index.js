@@ -16,7 +16,8 @@ var randomSelectionEl = document.getElementById('randomSelection');
 
 var ic = window.ic = new ImgClip({
     el: '#demo',
-    ratio: 1
+    ratio: 1,
+    rotation: 90
 });
 
 var randomNumber = function (min, max) {
@@ -29,9 +30,8 @@ ic.on('change', function (sel) {
 
 changeImageEl.onclick = function () {
     changeImageEl.disabled = true;
-    ic.changeImage('http://att.bbs.duowan.com/forum/201608/19/012109bz44gbng5fpw94mp.jpg');
+    ic.changeImage('http://m1.ablwang.com/uploadfile/2017/1014/20171014031816708.jpg');
 };
-
 
 randomSelectionEl.onclick = function () {
     ic.setSelection([
@@ -40,4 +40,8 @@ randomSelectionEl.onclick = function () {
         randomNumber(50, 350),
         randomNumber(50, 350)
     ])
+};
+
+document.querySelector('#rotate').onclick = function () {
+    ic.rotate(90);
 };
