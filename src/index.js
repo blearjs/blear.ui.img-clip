@@ -545,7 +545,6 @@ proto[_changeSelection] = function (positions, sizes) {
 proto[_parseSelection] = function () {
     var the = this;
     var options = the[_options];
-    var rotation = options.rotation;
     var expectWidth = options.expectWidth;
     var expectHeight = options.expectHeight;
     var imgOriginalWidth = the[_imgOriginalSizes][0];
@@ -567,11 +566,15 @@ proto[_parseSelection] = function () {
     // 绘制尺寸
     var drawWidth = 0;
     var drawHeight = 0;
+    // 绘制偏移量
     var translateX = 0;
     var translateY = 0;
+    // 绘制旋转角度
+    var rotation = options.rotation;
     var vertical = false;
-    var visibleWidth = 0;
-    var visibleHeight = 0;
+    // 实际尺寸（canvas 的宽高）
+    var actualWidth = 0;
+    var actualHeight = 0;
 
     switch (rotation) {
         case 0:
@@ -625,8 +628,8 @@ proto[_parseSelection] = function () {
             drawHeight = drawWidth / expectRatio;
         }
 
-        visibleWidth = drawHeight;
-        visibleHeight = drawWidth;
+        actualWidth = drawHeight;
+        actualHeight = drawWidth;
     } else {
         expectRatio = insideRatio ? insideRatio : selWidth / selHeight;
 
@@ -638,8 +641,8 @@ proto[_parseSelection] = function () {
             drawWidth = drawHeight * expectRatio;
         }
 
-        visibleWidth = drawWidth;
-        visibleHeight = drawHeight;
+        actualWidth = drawWidth;
+        actualHeight = drawHeight;
     }
 
     switch (rotation) {
@@ -661,21 +664,21 @@ proto[_parseSelection] = function () {
     }
 
     return {
-        left: selLeft,
-        top: selTop,
-        width: selWidth,
-        height: selHeight,
+        selLeft: selLeft,
+        selTop: selTop,
+        selWidth: selWidth,
+        selWeight: selHeight,
         srcLeft: srcLeft,
         srcTop: srcTop,
         srcWidth: srcWidth,
         srcHeight: srcHeight,
         drawWidth: drawWidth,
         drawHeight: drawHeight,
-        translateX: translateX,
-        translateY: translateY,
-        rotation: rotation,
-        visibleWidth: visibleWidth,
-        visibleHeight: visibleHeight
+        drawX: translateX,
+        drawY: translateY,
+        drawRadian: rotation * Math.PI / 180,
+        actualWidth: actualWidth,
+        actualHeight: actualHeight
     };
 };
 

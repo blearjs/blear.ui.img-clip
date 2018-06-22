@@ -50,10 +50,10 @@ ic.on('changeSelection', function (sel) {
     // });
     var ctx = canvasEl.getContext('2d');
     ctx.save();
-    canvasEl.width = sel.visibleWidth;
-    canvasEl.height = sel.visibleHeight;
-    ctx.translate(sel.translateX, sel.translateY);
-    ctx.rotate(sel.rotation * Math.PI / 180);
+    canvasEl.width = sel.actualWidth;
+    canvasEl.height = sel.actualHeight;
+    ctx.translate(sel.drawX, sel.drawY);
+    ctx.rotate(sel.drawRadian);
     canvasImg.draw(canvasEl, demoEl, {
         srcLeft: sel.srcLeft,
         srcTop: sel.srcTop,
