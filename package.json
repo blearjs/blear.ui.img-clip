@@ -48,6 +48,7 @@
   },
   "peerDependencies": {},
   "devDependencies": {
+    "blear.utils.canvas-img": "^1.0.1",
     "coolie.js": "^2.2.3"
   },
   "license": "MIT"

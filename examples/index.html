@@ -47,19 +47,21 @@
         }
 
         #demo {
-            transform: rotate(90deg);
+            max-width: 600px;
+            max-height: 600px;
         }
 
         button {
             font-size: 18px;
         }
 
-        #ret {
+        #ret ,
+        #canvas {
             position: fixed;
             overflow: hidden;
-            top: 0;
-            right: 0;
-            border: 5px solid #8b8b8b;
+            top: 4px;
+            right: 4px;
+            outline: 4px solid #888;
         }
 
         #ret img {
@@ -69,7 +71,7 @@
 </head>
 <body ontouchstart="">
 
-<img src="http://n.sinaimg.cn/news/transform/20171113/puY7-fynship2141885.jpg" alt="demo" id="demo">
+<img src="https://ws1.sinaimg.cn/large/4c0ca11fgy1fsjz9zqf40j20ia0rf4kg.jpg" alt="demo" id="demo">
 
 <hr>
 <button id="changeImage">改变图片地址</button>
@@ -77,7 +79,8 @@
 <button id="randomSelection">随机选区</button>
 
 <pre id="console">change event</pre>
-<div id="ret"><img id="retImg" src="http://n.sinaimg.cn/news/transform/20171113/puY7-fynship2141885.jpg" alt=""></div>
+<!--<div id="ret"><img id="retImg" src="http://n.sinaimg.cn/news/transform/20171113/puY7-fynship2141885.jpg" alt=""></div>-->
+<canvas id="canvas"></canvas>
 
 <script src="/node_modules/coolie.js/coolie.js"
         data-config="/examples/coolie-config.js"

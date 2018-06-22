@@ -68,7 +68,18 @@ var defaults = {
     /**
      * 开始选区的最小值
      */
-    minSelectionSize: 10
+    minSelectionSize: 10,
+
+    /**
+     * 期望裁剪的宽度，高度会等比运算，宽度优先级高于高度
+     * @type Number
+     */
+    drawWidth: 200,
+
+    /**
+     * 期望裁剪的高度，宽度会等比运算
+     */
+    drawHeight: 0
 };
 var ImgClip = UI.extend({
     className: 'ImgClip',
@@ -258,6 +269,8 @@ proto[_changeImage] = function (url) {
     var options = the[_options];
     var rotation = options.rotation || 0;
 
+    options.rotation = options.rotation % 360;
+
     if (rotation % 90 > 0) {
         return the.emit('error', new Error('仅支持垂直、水平方向旋转'));
     }
@@ -433,12 +446,17 @@ proto[_initEvent] = function () {
                 var selectWidth;
                 var selectHeight;
 
-                if (displayRatio < expectRatio) {
-                    selectHeight = Math.min(deltaY, options.maxHeight);
-                    selectWidth = selectHeight * expectRatio;
+                if (expectRatio) {
+                    if (displayRatio < expectRatio) {
+                        selectHeight = Math.min(deltaY, options.maxHeight);
+                        selectWidth = selectHeight * expectRatio;
+                    } else {
+                        selectWidth = Math.min(deltaX, options.maxWidth);
+                        selectHeight = selectWidth / expectRatio;
+                    }
                 } else {
-                    selectWidth = Math.min(deltaX, options.maxWidth);
-                    selectHeight = selectWidth / expectRatio;
+                    selectWidth = deltaX;
+                    selectHeight = deltaY;
                 }
 
                 the[_changeSelection](null, [selectWidth, selectHeight]);
@@ -526,18 +544,109 @@ proto[_changeSelection] = function (positions, sizes) {
 
 proto[_parseSelection] = function () {
     var the = this;
-    var ratioX = the[_imgDisplaySizes][0] / the[_imgOriginalSizes][0];
-    var ratioY = the[_imgDisplaySizes][1] / the[_imgOriginalSizes][1];
+    var options = the[_options];
+    var rotation = options.rotation;
+    var expectDrawWidth = options.drawWidth;
+    var expectDrawHeight = options.drawHeight;
+    var imgOriginalWidth = the[_imgOriginalSizes][0];
+    var imgOriginalHeight = the[_imgOriginalSizes][1];
+    var displayWidth = the[_imgDisplaySizes][0];
+    var displayHeight = the[_imgDisplaySizes][1];
+    var selLeft = the[_selectionLeftTopWidthHeight][0];
+    var selTop = the[_selectionLeftTopWidthHeight][1];
+    var selWidth = the[_selectionLeftTopWidthHeight][2];
+    var selHeight = the[_selectionLeftTopWidthHeight][3];
+    var ratioX = 1;
+    var ratioY = 1;
+    var insideRatio = options.ratio;
+    var expectRatio = 1;
+    var srcLeft = 0;
+    var srcTop = 0;
+    var srcWidth = 0;
+    var srcHeight = 0;
+    var drawWidth = 0;
+    var drawHeight = 0;
+    var translateX = 0;
+    var translateY = 0;
+
+    switch (rotation) {
+        case 0:
+            ratioX = displayWidth / imgOriginalWidth;
+            ratioY = displayHeight / imgOriginalHeight;
+            srcWidth = selWidth / ratioX;
+            srcHeight = selHeight / ratioY;
+            srcLeft = selLeft / ratioX;
+            srcTop = selTop / ratioY;
+            drawWidth = selWidth;
+            drawHeight = selHeight;
+            break;
+
+        case 90:
+            ratioX = displayHeight / imgOriginalWidth;
+            ratioY = displayWidth / imgOriginalHeight;
+            srcWidth = selHeight / ratioX;
+            srcHeight = selWidth / ratioY;
+            srcLeft = selTop / ratioX;
+            srcTop = imgOriginalHeight - selLeft / ratioY - srcHeight;
+            drawWidth = selHeight;
+            drawHeight = selWidth;
+            translateX = drawHeight;
+            break;
+
+        case 180:
+            ratioX = displayWidth / imgOriginalWidth;
+            ratioY = displayHeight / imgOriginalHeight;
+            srcWidth = selWidth / ratioX;
+            srcHeight = selHeight / ratioY;
+            srcLeft = imgOriginalWidth - selLeft / ratioX - srcWidth;
+            srcTop = imgOriginalHeight - selLeft / ratioY - srcHeight;
+            drawWidth = selWidth;
+            drawHeight = selHeight;
+            translateX = drawWidth;
+            translateY = drawHeight;
+            break;
+
+        case 270:
+            ratioX = displayHeight / imgOriginalWidth;
+            ratioY = displayWidth / imgOriginalHeight;
+            srcWidth = selHeight / ratioX;
+            srcHeight = selWidth / ratioY;
+            srcLeft = imgOriginalWidth - selTop / ratioX - srcWidth;
+            srcTop = selLeft / ratioY;
+            drawWidth = selHeight;
+            drawHeight = selWidth;
+            translateY = drawWidth;
+            break;
+    }
+
+    if (expectDrawWidth) {
+        drawWidth = expectDrawWidth;
+        expectRatio = insideRatio ? insideRatio : selWidth / drawWidth;
+        drawHeight = insideRatio
+            ? drawWidth / insideRatio
+            : selHeight / expectRatio;
+    } else {
+        drawHeight = expectDrawHeight;
+        expectRatio = insideRatio ? insideRatio : drawHeight / selHeight;
+        drawWidth = insideRatio
+            ? drawHeight * insideRatio
+            : selWidth * expectRatio;
+    }
 
     return {
-        left: the[_selectionLeftTopWidthHeight][0],
-        top: the[_selectionLeftTopWidthHeight][1],
-        width: the[_selectionLeftTopWidthHeight][2],
-        height: the[_selectionLeftTopWidthHeight][3],
-        srcLeft: the[_selectionLeftTopWidthHeight][0] / ratioX,
-        srcTop: the[_selectionLeftTopWidthHeight][1] / ratioY,
-        srcWidth: the[_selectionLeftTopWidthHeight][2] / ratioX,
-        srcHeight: the[_selectionLeftTopWidthHeight][3] / ratioY
+        left: selLeft,
+        top: selTop,
+        width: selWidth,
+        height: selHeight,
+        srcLeft: srcLeft,
+        srcTop: srcTop,
+        srcWidth: srcWidth,
+        srcHeight: srcHeight,
+        drawWidth: drawWidth,
+        drawHeight: drawHeight,
+        translateX: translateX,
+        translateY: translateY,
+        rotation: rotation
     };
 };
 
