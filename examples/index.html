@@ -19,12 +19,20 @@
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
     <title>index.html</title>
     <style>
+        * {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         img {
             max-width: 800px;
             height: auto;
         }
 
-        #ret {
+        #console {
             background: #333;
             color: #eee;
             font-family: Monaco;
@@ -45,6 +53,18 @@
         button {
             font-size: 18px;
         }
+
+        #ret {
+            position: fixed;
+            overflow: hidden;
+            top: 0;
+            right: 0;
+            border: 5px solid #8b8b8b;
+        }
+
+        #ret img {
+            position: absolute;
+        }
     </style>
 </head>
 <body ontouchstart="">
@@ -56,7 +76,8 @@
 <button id="rotate">右旋转90°</button>
 <button id="randomSelection">随机选区</button>
 
-<pre id="ret">change event</pre>
+<pre id="console">change event</pre>
+<div id="ret"><img id="retImg" src="http://n.sinaimg.cn/news/transform/20171113/puY7-fynship2141885.jpg" alt=""></div>
 
 <script src="/node_modules/coolie.js/coolie.js"
         data-config="/examples/coolie-config.js"

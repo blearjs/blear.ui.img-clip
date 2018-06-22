@@ -7,16 +7,19 @@
 
 'use strict';
 
+var attribute = require('blear.core.attribute');
 
 var ImgClip = require('../src/index');
 
+var consoleEl = document.getElementById('console');
 var retEl = document.getElementById('ret');
+var retImgEl = document.getElementById('retImg');
 var changeImageEl = document.getElementById('changeImage');
 var randomSelectionEl = document.getElementById('randomSelection');
 
 var ic = window.ic = new ImgClip({
     el: '#demo',
-    ratio: 1,
+    ratio: 0.618,
     rotation: 90
 });
 
@@ -24,13 +27,21 @@ var randomNumber = function (min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 };
 
-ic.on('change', function (sel) {
-    retEl.innerHTML = JSON.stringify(sel, null, 4);
+ic.on('changeSelection', function (sel) {
+    consoleEl.innerHTML = JSON.stringify(sel, null, 4);
+    attribute.style(retEl, {
+        width: sel.width,
+        height: sel.height
+    });
+    attribute.style(retImgEl, {
+        top: -sel.top,
+        left: -sel.left
+    });
 });
 
 changeImageEl.onclick = function () {
     changeImageEl.disabled = true;
-    ic.changeImage('http://m1.ablwang.com/uploadfile/2017/1014/20171014031816708.jpg');
+    ic.changeImage(retImgEl.src = 'http://m1.ablwang.com/uploadfile/2017/1014/20171014031816708.jpg');
 };
 
 randomSelectionEl.onclick = function () {

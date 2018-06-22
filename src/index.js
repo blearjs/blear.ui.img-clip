@@ -116,7 +116,6 @@ var ImgClip = UI.extend({
         return this[_parseSelection]();
     },
 
-
     /**
      * 设置选区
      * @param sel {Array} 选区，格式要求：[left, top, width, height]
@@ -413,8 +412,10 @@ proto[_initEvent] = function () {
     the[_trackerDraggable].on('dragEnd', function (meta) {
         var minSize = the[_resizable].getMinSize();
         var minSelectionSize = options.minSelectionSize;
+        var deltaX = meta.deltaX;
+        var deltaY = meta.deltaY;
 
-        if (meta.deltaX < minSelectionSize && meta.deltaY < minSelectionSize) {
+        if (deltaX < minSelectionSize && deltaY < minSelectionSize) {
             the[_changeMode](false);
             the.emit('cancelSelection');
         } else {
@@ -422,13 +423,25 @@ proto[_initEvent] = function () {
             the[_resizerDraggable].enable();
 
             // 不足最小尺寸
-            if (meta.deltaX < minSize.width || meta.deltaY < minSize.height) {
+            if (deltaX < minSize.width || deltaY < minSize.height) {
                 the[_changeSelection](null, [minSize.width, minSize.height]);
             }
             // 纠正选区
             else {
-                var maxSize = Math.max(meta.deltaX, meta.deltaY);
-                the[_changeSelection](null, [maxSize, maxSize]);
+                var displayRatio = deltaX / deltaY;
+                var expectRatio = options.ratio;
+                var selectWidth;
+                var selectHeight;
+
+                if (displayRatio < expectRatio) {
+                    selectHeight = Math.min(deltaY, options.maxHeight);
+                    selectWidth = selectHeight * expectRatio;
+                } else {
+                    selectWidth = Math.min(deltaX, options.maxWidth);
+                    selectHeight = selectWidth / expectRatio;
+                }
+
+                the[_changeSelection](null, [selectWidth, selectHeight]);
             }
 
             the.emit('afterSelection');
@@ -499,7 +512,6 @@ proto[_changeSelection] = function (positions, sizes) {
 
     the[_selectionLeftTopWidthHeight] = [left, top, width, height];
     the.emit('changeSelection', the[_parseSelection]());
-
     attribute.style(the[_resizerEl], {
         left: left,
         top: top,
