@@ -102,10 +102,7 @@ var ImgClip = UI.extend({
         var the = this;
         var args = access.args(arguments);
 
-        if (args.length === 2) {
-            the[_options].rotation = rotation || 0;
-        }
-
+        the[_options].rotation = args.length === 2 ? rotation || 0 : 0;
         the[_changeImage](url);
 
         return the;
