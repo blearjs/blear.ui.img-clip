@@ -94,8 +94,8 @@ var ImgClip = UI.extend({
 
     /**
      * 改变当前裁剪图片的地址
-     * @param url
-     * @param [rotation]
+     * @param url {String} 地址
+     * @param [rotation] {Number} 旋转度数，0、90、180、270
      * @returns {ImgClip}
      */
     changeImage: function (url, rotation) {
@@ -200,6 +200,7 @@ var _initNode = sole();
 var _initEvent = sole();
 var _autoCalMaxSelectionSize = sole();
 var _calMaxSelectionSize = sole();
+var _imageURL = sole();
 var _emptyImage = sole();
 var _changeImage = sole();
 var _changeMode = sole();
@@ -269,7 +270,7 @@ proto[_changeImage] = function (url) {
     var options = the[_options];
     var rotation = options.rotation || 0;
 
-    options.rotation = options.rotation % 360;
+    rotation = options.rotation = options.rotation % 360;
 
     if (rotation % 90 > 0) {
         return the.emit('error', new Error('仅支持垂直、水平方向旋转'));
@@ -278,6 +279,7 @@ proto[_changeImage] = function (url) {
     the.emit('beforeLoading');
     attribute.show(the[_imgEl], 'inline-block');
     the[_emptyImage]();
+    the[_imageURL] = url;
     loader.img(url, function (err, originalImg) {
         the.emit('afterLoading');
 

@@ -13,14 +13,14 @@ var canvasImg = require('blear.utils.canvas-img');
 var ImgClip = require('../src/index');
 
 var consoleEl = document.getElementById('console');
-var retEl = document.getElementById('ret');
-var retImgEl = document.getElementById('retImg');
+// var retEl = document.getElementById('ret');
+// var retImgEl = document.getElementById('retImg');
 var canvasEl = document.getElementById('canvas');
 var demoEl = document.getElementById('demo');
 var changeImageEl = document.getElementById('changeImage');
 var randomSelectionEl = document.getElementById('randomSelection');
 
-var rotation = 270;
+var rotation = 0;
 var ratio = 0.618;
 demoEl.style.transform = 'rotate(' + rotation + 'deg)';
 var ic = window.ic = new ImgClip({
@@ -80,5 +80,7 @@ randomSelectionEl.onclick = function () {
 };
 
 document.querySelector('#rotate').onclick = function () {
-    ic.rotate(90);
+    rotation += 90;
+    demoEl.style.transform = 'rotate(' + rotation + 'deg)';
+    ic.changeImage(demoEl.src, rotation);
 };
