@@ -118,7 +118,10 @@ var ImgClip = UI.extend({
 
     /**
      * 获取当前选区
-     * @returns {{left:Number,top:Number,width:Number,height:Number,srcLeft:Number,srcTop:Number,srcWidth:Number,srcHeight:Number}}
+     * @returns {{selLeft:Number,selTop:Number,selWidth:Number,selHeight:Number,
+     * srcLeft:Number,srcTop:Number,srcWidth:Number,srcHeight:Number,
+     * drawWidth:Number,drawHeight:Number,drawX:number,drawY:number,drawRadian:number,
+     * actualWidth:number,actualHeight:number}}
      */
     getSelection: function () {
         return this[_parseSelection]();
